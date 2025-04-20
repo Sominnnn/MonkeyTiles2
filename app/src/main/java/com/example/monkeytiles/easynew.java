@@ -186,7 +186,7 @@ public class easynew extends AppCompatActivity {
             handler.postDelayed(() -> {
                 if (!isFinishing() && !isDestroyed()) {
                     // You could create a GameCompleted activity or use a dialog
-                    Intent intent = new Intent(easynew.this, MainActivity.class);
+                    Intent intent = new Intent(easynew.this, win.class);
                     intent.putExtra("GAME_COMPLETED", true);
                     intent.putExtra("FLIP_COUNT", flipCount);
                     intent.putExtra("DIFFICULTY", "Hard");
