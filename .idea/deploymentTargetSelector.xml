@@ -4,17 +4,27 @@
     <selectionStates>
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
+<<<<<<< HEAD
         <DropdownSelection timestamp="2025-04-20T17:37:03.756961800Z">
           <Target type="DEFAULT_BOOT">
             <handle>
               <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\Rance\.android\avd\Pixel_4.avd" />
+=======
+        <DropdownSelection timestamp="2025-04-20T17:51:12.647726600Z">
+          <Target type="DEFAULT_BOOT">
+            <handle>
+              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\yvepu\.android\avd\Pixel_4.avd" />
+>>>>>>> 54bd572c0c0f4999e16f0c1348e867a32c0aa7c1
             </handle>
           </Target>
         </DropdownSelection>
         <DialogSelection />
+<<<<<<< HEAD
       </SelectionState>
       <SelectionState runConfigName="MainActivity">
         <option name="selectionMode" value="DROPDOWN" />
+=======
+>>>>>>> 54bd572c0c0f4999e16f0c1348e867a32c0aa7c1
       </SelectionState>
     </selectionStates>
   </component>

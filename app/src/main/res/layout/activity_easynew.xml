@@ -10,8 +10,8 @@
 
     <Button
         android:id="@+id/pausebtn_easynew"
-        android:layout_width="91dp"
-        android:layout_height="59dp"
+        android:layout_width="76dp"
+        android:layout_height="51dp"
         android:background="@android:color/transparent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
