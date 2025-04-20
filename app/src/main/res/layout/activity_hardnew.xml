@@ -10,8 +10,8 @@
 
     <Button
         android:id="@+id/pausbtn_newhard"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="64dp"
+        android:layout_height="53dp"
         android:background="@android:color/transparent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -19,4 +19,177 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.023" />
+
+    <GridLayout
+        android:id="@+id/gridLayout"
+        android:layout_width="322dp"
+        android:layout_height="420dp"
+        android:alignmentMode="alignMargins"
+        android:columnCount="4"
+        android:padding="16dp"
+        android:rowCount="4"
+        android:useDefaultMargins="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.595"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.594">
+
+        <!-- Row 1 -->
+        <ImageButton
+            android:id="@+id/card0"
+            android:layout_width="65dp"
+            android:layout_height="85dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/card"
+            android:contentDescription="Memory Card"
+            android:scaleType="fitXY" />
+
+        <ImageButton
+            android:id="@+id/card1"
+            android:layout_width="65dp"
+            android:layout_height="85dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/card"
+            android:contentDescription="Memory Card"
+            android:scaleType="fitXY" />
+
+        <ImageButton
+            android:id="@+id/card2"
+            android:layout_width="65dp"
+            android:layout_height="85dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/card"
+            android:contentDescription="Memory Card"
+            android:scaleType="fitXY" />
+
+        <ImageButton
+            android:id="@+id/card3"
+            android:layout_width="65dp"
+            android:layout_height="85dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/card"
+            android:contentDescription="Memory Card"
+            android:scaleType="fitXY" />
+
+        <!-- Row 2 -->
+        <ImageButton
+            android:id="@+id/card4"
+            android:layout_width="65dp"
+            android:layout_height="85dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/card"
+            android:contentDescription="Memory Card"
+            android:scaleType="fitXY" />
+
+        <ImageButton
+            android:id="@+id/card5"
+            android:layout_width="65dp"
+            android:layout_height="85dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/card"
+            android:contentDescription="Memory Card"
+            android:scaleType="fitXY" />
+
+        <ImageButton
+            android:id="@+id/card6"
+            android:layout_width="65dp"
+            android:layout_height="85dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/card"
+            android:contentDescription="Memory Card"
+            android:scaleType="fitXY" />
+
+        <ImageButton
+            android:id="@+id/card7"
+            android:layout_width="65dp"
+            android:layout_height="85dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/card"
+            android:contentDescription="Memory Card"
+            android:scaleType="fitXY" />
+
+        <!-- Row 3 -->
+        <ImageButton
+            android:id="@+id/card8"
+            android:layout_width="65dp"
+            android:layout_height="85dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/card"
+            android:contentDescription="Memory Card"
+            android:scaleType="fitXY" />
+
+        <ImageButton
+            android:id="@+id/card9"
+            android:layout_width="65dp"
+            android:layout_height="85dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/card"
+            android:contentDescription="Memory Card"
+            android:scaleType="fitXY" />
+
+        <ImageButton
+            android:id="@+id/card10"
+            android:layout_width="65dp"
+            android:layout_height="85dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/card"
+            android:contentDescription="Memory Card"
+            android:scaleType="fitXY" />
+
+        <ImageButton
+            android:id="@+id/card11"
+            android:layout_width="65dp"
+            android:layout_height="85dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/card"
+            android:contentDescription="Memory Card"
+            android:scaleType="fitXY" />
+
+        <!-- Row 4 -->
+        <ImageButton
+            android:id="@+id/card12"
+            android:layout_width="65dp"
+            android:layout_height="85dp"
+            android:background="@drawable/card"
+            android:contentDescription="Memory Card"
+            android:scaleType="fitXY" />
+
+        <ImageButton
+            android:id="@+id/card13"
+            android:layout_width="65dp"
+            android:layout_height="85dp"
+            android:background="@drawable/card"
+            android:contentDescription="Memory Card"
+            android:scaleType="fitXY" />
+
+        <ImageButton
+            android:id="@+id/card14"
+            android:layout_width="65dp"
+            android:layout_height="85dp"
+            android:background="@drawable/card"
+            android:contentDescription="Memory Card"
+            android:scaleType="fitXY" />
+
+        <ImageButton
+            android:id="@+id/card15"
+            android:layout_width="65dp"
+            android:layout_height="85dp"
+            android:background="@drawable/card"
+            android:contentDescription="Memory Card"
+            android:scaleType="fitXY" />
+
+    </GridLayout>
+
+    <TextView
+        android:id="@+id/flipCounterHard"
+        android:layout_width="71dp"
+        android:layout_height="25dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.708"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.062" />
 </androidx.constraintlayout.widget.ConstraintLayout>

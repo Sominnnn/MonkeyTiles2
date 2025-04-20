@@ -44,7 +44,7 @@ public class mediumeasy extends AppCompatActivity {
         // Set up pause button
         Button pausebutton = findViewById(R.id.pausebtn_mediumeasy);
         pausebutton.setOnClickListener(v -> {
-            Intent intent = new Intent(mediumeasy.this, pause.class);
+            Intent intent = new Intent(mediumeasy.this, pause1.class);
             // Don't use finish() here as it might be causing the problem
             startActivity(intent);
         });
