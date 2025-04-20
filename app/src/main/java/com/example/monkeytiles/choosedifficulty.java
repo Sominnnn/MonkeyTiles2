@@ -48,7 +48,7 @@ public class choosedifficulty extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 // Navigate to CardCatalogActivity
-                Intent intent = new Intent(choosedifficulty.this, easy.class);
+                Intent intent = new Intent(choosedifficulty.this, easynew.class);
                 startActivity(intent);
             }
         });
@@ -58,7 +58,7 @@ public class choosedifficulty extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 // Navigate to CardCatalogActivity
-                Intent intent = new Intent(choosedifficulty.this, medium.class);
+                Intent intent = new Intent(choosedifficulty.this, mediumeasy.class);
                 startActivity(intent);
             }
         });
@@ -68,7 +68,7 @@ public class choosedifficulty extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 // Navigate to CardCatalogActivity
-                Intent intent = new Intent(choosedifficulty.this, hard.class);
+                Intent intent = new Intent(choosedifficulty.this, hardnew.class);
                 startActivity(intent);
             }
         });

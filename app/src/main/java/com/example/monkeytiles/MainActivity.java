@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 // Navigate to CardCatalogActivity
-                Intent intent = new Intent(MainActivity.this, signup.class);
+                Intent intent = new Intent(MainActivity.this, choosedifficulty.class);
                 startActivity(intent);
             }
         });
