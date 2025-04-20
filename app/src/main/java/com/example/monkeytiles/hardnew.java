@@ -46,8 +46,14 @@ public class hardnew extends AppCompatActivity {
             startActivity(intent);
         });
 
-        // Always do a full reset/shuffle when the activity is created
-        resetGame();
+        // Check if we're coming from the restart button
+        if (getIntent().getBooleanExtra("RESTART_GAME", false)) {
+            // Force a reset if we're coming from the restart button
+            resetGame();
+        } else {
+            // Always do a full reset/shuffle when the activity is created normally
+            resetGame();
+        }
     }
 
     private void initializeCards() {
@@ -194,8 +200,10 @@ public class hardnew extends AppCompatActivity {
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
-        // If returning to this activity, ensure we reset the game
-        resetGame();
+        // If returning to this activity, ensure we reset the game if requested
+        if (intent.getBooleanExtra("RESTART_GAME", false) || needsReshuffling) {
+            resetGame();
+        }
     }
 
     @Override
