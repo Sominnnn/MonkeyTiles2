@@ -56,6 +56,7 @@ public class leaderboard extends AppCompatActivity {
 
             // Create test scores for the current user in all difficulties
             SharedPreferences.Editor editor = scorePrefs.edit();
+            // Make sure to use the exact same username key format
             editor.putInt(currentUsername + "_easy", 20);
             editor.putInt(currentUsername + "_normal", 35);
             editor.putInt(currentUsername + "_hard", 50);
@@ -235,7 +236,13 @@ public class leaderboard extends AppCompatActivity {
             Log.d(TAG, "Key=" + entry.getKey() + ", Value=" + entry.getValue());
         }
 
+        // Debug: Print out the current username for verification
+        Log.d(TAG, "Current username that should be highlighted: " + currentUsername);
+
         List<LeaderboardEntry> entries = new ArrayList<>();
+
+        // Add a special entry for the current user if they don't have any scores yet
+        boolean currentUserHasScore = false;
 
         for (Map.Entry<String, ?> entry : allScores.entrySet()) {
             String key = entry.getKey();
@@ -247,6 +254,12 @@ public class leaderboard extends AppCompatActivity {
                 String difficulty = parts[1];
 
                 Log.d(TAG, "Processing entry: " + username + " with difficulty " + difficulty);
+
+                // Check if this is the current user's score
+                if (username.equals(currentUsername)) {
+                    currentUserHasScore = true;
+                    Log.d(TAG, "Found a score for current user: " + currentUsername);
+                }
 
                 // Filter by difficulty if needed
                 if (!currentDifficulty.equals("all") && !difficulty.equals(currentDifficulty)) {
@@ -279,10 +292,19 @@ public class leaderboard extends AppCompatActivity {
             }
         }
 
+        // If the current user has no scores yet but we have a valid username, display a placeholder
+        if (!currentUserHasScore && !currentUsername.isEmpty() && currentDifficulty.equals("all")) {
+            Log.d(TAG, "Adding placeholder entry for current user with no scores");
+            entries.add(new LeaderboardEntry(currentUsername, "N/A", 0));
+        }
+
         // Sort entries by flips (ascending - fewer flips is better)
         Collections.sort(entries, new Comparator<LeaderboardEntry>() {
             @Override
             public int compare(LeaderboardEntry o1, LeaderboardEntry o2) {
+                // Put placeholder entries (score 0) at the bottom
+                if (o1.flips == 0) return 1;
+                if (o2.flips == 0) return -1;
                 return Integer.compare(o1.flips, o2.flips);
             }
         });
@@ -292,7 +314,9 @@ public class leaderboard extends AppCompatActivity {
         // Display entries in the layout
         int count = 0;
         for (LeaderboardEntry entry : entries) {
-            if (count >= 10) break; // Show only top 10
+            if (count >= 10 && !entry.username.equals(currentUsername)) {
+                continue; // Skip non-current user entries if we already have 10, but always show current user
+            }
 
             // For simplicity, creating text views directly
             LinearLayout rowLayout = new LinearLayout(this);
@@ -302,9 +326,10 @@ public class leaderboard extends AppCompatActivity {
             rowLayout.setOrientation(LinearLayout.HORIZONTAL);
             rowLayout.setPadding(16, 16, 16, 16);
 
-            // Highlight current user's row
-            if (entry.username.equals(currentUsername)) {
+            // Highlight current user's row - Case-insensitive comparison
+            if (entry.username.equalsIgnoreCase(currentUsername)) {
                 rowLayout.setBackgroundColor(getResources().getColor(android.R.color.holo_green_light));
+                Log.d(TAG, "Highlighting row for current user: " + entry.username);
             }
 
             // Rank column
@@ -312,7 +337,7 @@ public class leaderboard extends AppCompatActivity {
             LinearLayout.LayoutParams rankParams = new LinearLayout.LayoutParams(
                     0, LinearLayout.LayoutParams.WRAP_CONTENT, 0.2f);
             rankView.setLayoutParams(rankParams);
-            rankView.setText("#" + (count + 1));
+            rankView.setText(entry.flips == 0 ? "-" : "#" + (count + 1));
             rankView.setTextSize(16);
 
             // Name column
@@ -339,7 +364,7 @@ public class leaderboard extends AppCompatActivity {
             LinearLayout.LayoutParams scoreParams = new LinearLayout.LayoutParams(
                     0, LinearLayout.LayoutParams.WRAP_CONTENT, 0.5f);
             scoreView.setLayoutParams(scoreParams);
-            scoreView.setText(String.valueOf(entry.flips) + " flips");
+            scoreView.setText(entry.flips == 0 ? "No score yet" : String.valueOf(entry.flips) + " flips");
             scoreView.setTextSize(16);
             scoreView.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_END);
 
@@ -362,7 +387,9 @@ public class leaderboard extends AppCompatActivity {
 
             leaderboardContainer.addView(divider);
 
-            count++;
+            if (entry.flips > 0) { // Only count valid scores toward the limit
+                count++;
+            }
         }
 
         // Show a message if no entries found
