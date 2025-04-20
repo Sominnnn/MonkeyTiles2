@@ -22,8 +22,8 @@
         app:layout_constraintVertical_bias="0.01" />
 
     <GridLayout
-        android:layout_width="294dp"
-        android:layout_height="438dp"
+        android:layout_width="247dp"
+        android:layout_height="423dp"
         android:alignmentMode="alignMargins"
         android:columnCount="3"
         android:padding="16dp"
@@ -31,10 +31,10 @@
         android:useDefaultMargins="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.675"
+        app:layout_constraintHorizontal_bias="0.536"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.621">
+        app:layout_constraintVertical_bias="0.59">
 
         <!-- Row 1 -->
         <ImageButton
