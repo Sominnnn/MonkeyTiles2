@@ -24,11 +24,13 @@ public class pause2 extends AppCompatActivity {
         });
 
         // Set up continue button
-        Button continueButton = findViewById(R.id.restartbtn_pause2);
+        Button continueButton = findViewById(R.id.returnbtn_pause2);
         if (continueButton != null) {
             continueButton.setOnClickListener(v -> {
                 // Simply finish this activity to return to the game
+                // Add an animation to make the transition smoother
                 finish();
+                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
             });
         }
 
@@ -61,5 +63,6 @@ public class pause2 extends AppCompatActivity {
     public void onBackPressed() {
         // Override back button to continue the game
         finish();
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
     }
 }

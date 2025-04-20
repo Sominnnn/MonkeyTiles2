@@ -44,6 +44,8 @@ public class hardnew extends AppCompatActivity {
         pausebutton.setOnClickListener(v -> {
             Intent intent = new Intent(hardnew.this, pause2.class);
             startActivity(intent);
+            // Add a transition animation
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         });
 
         // Check if we're coming from the restart button
