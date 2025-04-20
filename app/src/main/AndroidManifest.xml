@@ -13,6 +13,24 @@
         android:theme="@style/Theme.MonkeyTiles"
         tools:targetApi="31">
         <activity
+            android:name=".youwin2"
+            android:exported="false" />
+        <activity
+            android:name=".timerunout2"
+            android:exported="false" />
+        <activity
+            android:name=".pause2"
+            android:exported="false" />
+        <activity
+            android:name=".youwin1"
+            android:exported="false" />
+        <activity
+            android:name=".timerunout1"
+            android:exported="false" />
+        <activity
+            android:name=".pause1"
+            android:exported="false" />
+        <activity
             android:name=".hardnew"
             android:exported="false" />
         <activity
