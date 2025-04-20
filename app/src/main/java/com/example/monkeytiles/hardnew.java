@@ -38,9 +38,6 @@ public class hardnew extends AppCompatActivity {
         // Initialize all cards first
         initializeCards();
 
-        // Shuffle images
-        Collections.shuffle(Arrays.asList(cardImages));
-
         // Set up pause button
         Button pausebutton = findViewById(R.id.pausbtn_newhard);
         pausebutton.setOnClickListener(v -> {
@@ -49,9 +46,12 @@ public class hardnew extends AppCompatActivity {
             startActivity(intent);
         });
 
-        // Handle restart if needed
+        // Check for restart intent
         if (getIntent().getBooleanExtra("RESTART_GAME", false)) {
             resetGame();
+        } else {
+            // Only shuffle cards initially if it's not a restart
+            shuffleCards();
         }
     }
 
@@ -75,12 +75,17 @@ public class hardnew extends AppCompatActivity {
         }
     }
 
+    // New method to handle card shuffling separately
+    private void shuffleCards() {
+        Collections.shuffle(Arrays.asList(cardImages));
+    }
+
     private void resetGame() {
         // Reset the flip count
         flipCount = 0;
         updateFlipCounter();
 
-        // Reset all card images
+        // Reset all card images and tags
         for (ImageButton card : cards) {
             if (card != null) {
                 card.setImageResource(R.drawable.card);
@@ -88,8 +93,8 @@ public class hardnew extends AppCompatActivity {
             }
         }
 
-        // Reshuffle the cards
-        Collections.shuffle(Arrays.asList(cardImages));
+        // Reshuffle the cards - moved here to ensure it happens on restart
+        shuffleCards();
 
         // Reset game state
         firstCardIndex = -1;
@@ -169,7 +174,7 @@ public class hardnew extends AppCompatActivity {
                     Intent intent = new Intent(hardnew.this, MainActivity.class);
                     intent.putExtra("GAME_COMPLETED", true);
                     intent.putExtra("FLIP_COUNT", flipCount);
-                    intent.putExtra("DIFFICULTY", "Medium-Easy");
+                    intent.putExtra("DIFFICULTY", "Hard");  // Changed from "Medium-Easy" to match class name
                     startActivity(intent);
                 }
             }, 500);
@@ -192,7 +197,7 @@ public class hardnew extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         // Override back button behavior to go to pause screen instead of MainActivity
-        Intent intent = new Intent(hardnew.this, pause.class);
+        Intent intent = new Intent(hardnew.this, pause2.class);  // Changed to pause2 to match pause button
         startActivity(intent);
         // Don't call super.onBackPressed() as it would finish this activity
     }
