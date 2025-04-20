@@ -3,6 +3,7 @@ package com.example.monkeytiles;
 import android.os.Handler;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.ImageButton;
@@ -28,12 +29,40 @@ public class hardnew extends AppCompatActivity {
     private TextView flipCounter;
     private static boolean needsReshuffling = true; // Track if cards need reshuffling
 
+    // Timer variables
+    private TextView timerTextView;
+    private long startTimeMillis = 0;
+    private Handler timerHandler = new Handler();
+    private boolean timerRunning = false;
+
+    // Runnable for updating the timer
+    private final Runnable timerRunnable = new Runnable() {
+        @Override
+        public void run() {
+            long currentTimeMillis = SystemClock.elapsedRealtime();
+            long elapsedMillis = currentTimeMillis - startTimeMillis;
+
+            // Convert to seconds
+            int seconds = (int) (elapsedMillis / 1000);
+            int minutes = seconds / 60;
+            seconds = seconds % 60;
+
+            // Update the timer TextView
+            updateTimerDisplay(minutes, seconds);
+
+            // Post again to keep the timer running
+            timerHandler.postDelayed(this, 1000); // Update every second
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_hardnew);
 
         flipCounter = findViewById(R.id.flipCounterHard);
+        // Initialize timer TextView - make sure to add this to your layout!
+        timerTextView = findViewById(R.id.timerEasy);
         updateFlipCounter();
 
         // Initialize all cards first
@@ -42,6 +71,7 @@ public class hardnew extends AppCompatActivity {
         // Set up pause button
         Button pausebutton = findViewById(R.id.pausbtn_newhard);
         pausebutton.setOnClickListener(v -> {
+            pauseTimer(); // Pause the timer when game is paused
             Intent intent = new Intent(hardnew.this, pause2.class);
             startActivity(intent);
             // Add a transition animation
@@ -55,6 +85,34 @@ public class hardnew extends AppCompatActivity {
         } else {
             // Always do a full reset/shuffle when the activity is created normally
             resetGame();
+        }
+
+        // Start the timer when the game starts
+        startTimer();
+    }
+
+    private void startTimer() {
+        if (!timerRunning) {
+            startTimeMillis = SystemClock.elapsedRealtime();
+            timerHandler.postDelayed(timerRunnable, 0);
+            timerRunning = true;
+        }
+    }
+
+    private void pauseTimer() {
+        timerHandler.removeCallbacks(timerRunnable);
+        timerRunning = false;
+    }
+
+    private void resetTimer() {
+        pauseTimer();
+        updateTimerDisplay(0, 0);
+    }
+
+    private void updateTimerDisplay(int minutes, int seconds) {
+        if (timerTextView != null) {
+            String timeStr = String.format("%02d:%02d", minutes, seconds);
+            timerTextView.setText(timeStr);
         }
     }
 
@@ -88,6 +146,10 @@ public class hardnew extends AppCompatActivity {
         // Reset the flip count
         flipCount = 0;
         updateFlipCounter();
+
+        // Reset the timer
+        resetTimer();
+        startTimer();
 
         // Reset all card images and tags
         for (ImageButton card : cards) {
@@ -175,6 +237,9 @@ public class hardnew extends AppCompatActivity {
             // Set flag to indicate reshuffling is needed on next start
             needsReshuffling = true;
 
+            // Stop the timer when game is complete
+            pauseTimer();
+
             // Disable further clicks while showing completion
             for (ImageButton card : cards) {
                 if (card != null) {
@@ -185,10 +250,14 @@ public class hardnew extends AppCompatActivity {
             Handler handler = new Handler();
             handler.postDelayed(() -> {
                 if (!isFinishing() && !isDestroyed()) {
+                    // Get the final time values
+                    String finalTime = timerTextView.getText().toString();
+
                     // You could create a GameCompleted activity or use a dialog
                     Intent intent = new Intent(hardnew.this, youwin1.class);
                     intent.putExtra("GAME_COMPLETED", true);
                     intent.putExtra("FLIP_COUNT", flipCount);
+                    intent.putExtra("FINAL_TIME", finalTime);
                     intent.putExtra("DIFFICULTY", "Hard");
                     startActivity(intent);
                     finish(); // End this activity to ensure a fresh start
@@ -214,6 +283,9 @@ public class hardnew extends AppCompatActivity {
         // When restarting from background, make sure to reset if needed
         if (needsReshuffling) {
             resetGame();
+        } else {
+            // Resume timer
+            startTimer();
         }
     }
 
@@ -223,18 +295,23 @@ public class hardnew extends AppCompatActivity {
         // You can check if a reset is needed here too
         if (needsReshuffling) {
             resetGame();
+        } else {
+            // Resume timer
+            startTimer();
         }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        // You can save game state here if needed
+        // Pause the timer when the activity is paused
+        pauseTimer();
     }
 
     @Override
     public void onBackPressed() {
         // Override back button behavior to go to pause screen
+        pauseTimer(); // Pause the timer
         Intent intent = new Intent(hardnew.this, pause2.class);
         startActivity(intent);
         // Don't call super.onBackPressed() as it would finish this activity
