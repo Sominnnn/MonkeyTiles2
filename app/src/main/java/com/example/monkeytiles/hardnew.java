@@ -26,6 +26,7 @@ public class hardnew extends AppCompatActivity {
     private boolean isBusy = false;
     private int flipCount = 0;
     private TextView flipCounter;
+    private static boolean needsReshuffling = true; // Track if cards need reshuffling
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,17 +43,11 @@ public class hardnew extends AppCompatActivity {
         Button pausebutton = findViewById(R.id.pausbtn_newhard);
         pausebutton.setOnClickListener(v -> {
             Intent intent = new Intent(hardnew.this, pause2.class);
-            // Don't use finish() here as it might be causing the problem
             startActivity(intent);
         });
 
-        // Check for restart intent
-        if (getIntent().getBooleanExtra("RESTART_GAME", false)) {
-            resetGame();
-        } else {
-            // Only shuffle cards initially if it's not a restart
-            shuffleCards();
-        }
+        // Always do a full reset/shuffle when the activity is created
+        resetGame();
     }
 
     private void initializeCards() {
@@ -75,9 +70,10 @@ public class hardnew extends AppCompatActivity {
         }
     }
 
-    // New method to handle card shuffling separately
+    // Ensure shuffle happens every time
     private void shuffleCards() {
         Collections.shuffle(Arrays.asList(cardImages));
+        needsReshuffling = false; // Reset the flag after shuffling
     }
 
     private void resetGame() {
@@ -90,10 +86,11 @@ public class hardnew extends AppCompatActivity {
             if (card != null) {
                 card.setImageResource(R.drawable.card);
                 card.setTag(null);
+                card.setClickable(true); // Ensure cards are clickable again
             }
         }
 
-        // Reshuffle the cards - moved here to ensure it happens on restart
+        // Always reshuffle the cards on reset
         shuffleCards();
 
         // Reset game state
@@ -167,6 +164,16 @@ public class hardnew extends AppCompatActivity {
         }
 
         if (allMatched) {
+            // Set flag to indicate reshuffling is needed on next start
+            needsReshuffling = true;
+
+            // Disable further clicks while showing completion
+            for (ImageButton card : cards) {
+                if (card != null) {
+                    card.setClickable(false);
+                }
+            }
+
             Handler handler = new Handler();
             handler.postDelayed(() -> {
                 if (!isFinishing() && !isDestroyed()) {
@@ -174,14 +181,41 @@ public class hardnew extends AppCompatActivity {
                     Intent intent = new Intent(hardnew.this, MainActivity.class);
                     intent.putExtra("GAME_COMPLETED", true);
                     intent.putExtra("FLIP_COUNT", flipCount);
-                    intent.putExtra("DIFFICULTY", "Hard");  // Changed from "Medium-Easy" to match class name
+                    intent.putExtra("DIFFICULTY", "Hard");
                     startActivity(intent);
+                    finish(); // End this activity to ensure a fresh start
                 }
             }, 500);
         }
     }
 
-    // Override the onPause and onResume methods to handle activity lifecycle
+    // Override the onNewIntent method to handle when the activity is reused
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        // If returning to this activity, ensure we reset the game
+        resetGame();
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        // When restarting from background, make sure to reset if needed
+        if (needsReshuffling) {
+            resetGame();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // You can check if a reset is needed here too
+        if (needsReshuffling) {
+            resetGame();
+        }
+    }
+
     @Override
     protected void onPause() {
         super.onPause();
@@ -189,15 +223,9 @@ public class hardnew extends AppCompatActivity {
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        // You can restore game state here if needed
-    }
-
-    @Override
     public void onBackPressed() {
-        // Override back button behavior to go to pause screen instead of MainActivity
-        Intent intent = new Intent(hardnew.this, pause2.class);  // Changed to pause2 to match pause button
+        // Override back button behavior to go to pause screen
+        Intent intent = new Intent(hardnew.this, pause2.class);
         startActivity(intent);
         // Don't call super.onBackPressed() as it would finish this activity
     }
