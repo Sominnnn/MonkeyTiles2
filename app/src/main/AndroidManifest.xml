@@ -39,7 +39,8 @@
             android:parentActivityName=".MainActivity"/>
         <activity
             android:name=".easynew"
-            android:exported="false" />
+            android:launchMode="singleTask"
+            android:parentActivityName=".MainActivity"/>
         <activity
             android:name=".leaderboard"
             android:exported="false" />
