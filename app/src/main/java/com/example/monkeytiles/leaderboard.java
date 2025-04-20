@@ -1,6 +1,9 @@
 package com.example.monkeytiles;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,6 +22,15 @@ public class leaderboard extends AppCompatActivity {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
+        });
+        Button backButton = findViewById(R.id.pausebtn_leaderboard);
+        backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Navigate to CardCatalogActivity
+                Intent intent = new Intent(leaderboard.this, MainActivity.class);
+                startActivity(intent);
+            }
         });
     }
 }

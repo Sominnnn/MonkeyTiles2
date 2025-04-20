@@ -1,6 +1,9 @@
 package com.example.monkeytiles;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,6 +22,55 @@ public class choosedifficulty extends AppCompatActivity {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
+        });
+        Button pauseButton = findViewById(R.id.pausebtn_choosediff);
+        pauseButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Navigate to CardCatalogActivity
+                Intent intent = new Intent(choosedifficulty.this, pause.class);
+                startActivity(intent);
+            }
+        });
+
+        Button homeButton = findViewById(R.id.homebtn_choosedif);
+        homeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Navigate to CardCatalogActivity
+                Intent intent = new Intent(choosedifficulty.this, MainActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        Button easyButton = findViewById(R.id.easybtn_choosediff2);
+        easyButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Navigate to CardCatalogActivity
+                Intent intent = new Intent(choosedifficulty.this, easy.class);
+                startActivity(intent);
+            }
+        });
+
+        Button mediumButton = findViewById(R.id.moderatebtn_choosediff);
+        mediumButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Navigate to CardCatalogActivity
+                Intent intent = new Intent(choosedifficulty.this, medium.class);
+                startActivity(intent);
+            }
+        });
+
+        Button hardButton = findViewById(R.id.hardbtn_choosediff);
+        hardButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Navigate to CardCatalogActivity
+                Intent intent = new Intent(choosedifficulty.this, hard.class);
+                startActivity(intent);
+            }
         });
     }
 }

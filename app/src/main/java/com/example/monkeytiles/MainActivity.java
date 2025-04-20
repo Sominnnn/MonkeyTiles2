@@ -1,12 +1,17 @@
 package com.example.monkeytiles;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+
+import com.example.monkeytiles.ui.instruction;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -19,6 +24,36 @@ public class MainActivity extends AppCompatActivity {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
+        });
+
+        Button startButton = findViewById(R.id.startbtn_home);
+        startButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Navigate to CardCatalogActivity
+                Intent intent = new Intent(MainActivity.this, signup.class);
+                startActivity(intent);
+            }
+        });
+
+        Button catalogButton = findViewById(R.id.signupbtn_home);
+        catalogButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Navigate to CardCatalogActivity
+                Intent intent = new Intent(MainActivity.this, category1.class);
+                startActivity(intent);
+            }
+        });
+
+        Button howtoplayButton = findViewById(R.id.catalogbtn_home);
+        howtoplayButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Navigate to CardCatalogActivity
+                Intent intent = new Intent(MainActivity.this, instruction.class);
+                startActivity(intent);
+            }
         });
     }
 }
