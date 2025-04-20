@@ -38,6 +38,15 @@
 
         <!-- Row 1 -->
         <ImageButton
+            android:id="@+id/card0"
+            android:layout_width="65dp"
+            android:layout_height="85dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/card"
+            android:contentDescription="Memory Card"
+            android:scaleType="fitXY" />
+
+        <ImageButton
             android:id="@+id/card1"
             android:layout_width="65dp"
             android:layout_height="85dp"
@@ -55,6 +64,7 @@
             android:contentDescription="Memory Card"
             android:scaleType="fitXY" />
 
+        <!-- Row 2 -->
         <ImageButton
             android:id="@+id/card3"
             android:layout_width="65dp"
@@ -64,7 +74,6 @@
             android:contentDescription="Memory Card"
             android:scaleType="fitXY" />
 
-        <!-- Row 2 -->
         <ImageButton
             android:id="@+id/card4"
             android:layout_width="65dp"
@@ -83,6 +92,7 @@
             android:contentDescription="Memory Card"
             android:scaleType="fitXY" />
 
+        <!-- Row 3 -->
         <ImageButton
             android:id="@+id/card6"
             android:layout_width="65dp"
@@ -92,7 +102,6 @@
             android:contentDescription="Memory Card"
             android:scaleType="fitXY" />
 
-        <!-- Row 3 -->
         <ImageButton
             android:id="@+id/card7"
             android:layout_width="65dp"
@@ -111,16 +120,15 @@
             android:contentDescription="Memory Card"
             android:scaleType="fitXY" />
 
+        <!-- Row 4 -->
         <ImageButton
             android:id="@+id/card9"
             android:layout_width="65dp"
             android:layout_height="85dp"
-            android:layout_marginBottom="10dp"
             android:background="@drawable/card"
             android:contentDescription="Memory Card"
             android:scaleType="fitXY" />
 
-        <!-- Row 4 -->
         <ImageButton
             android:id="@+id/card10"
             android:layout_width="65dp"
@@ -131,14 +139,6 @@
 
         <ImageButton
             android:id="@+id/card11"
-            android:layout_width="65dp"
-            android:layout_height="85dp"
-            android:background="@drawable/card"
-            android:contentDescription="Memory Card"
-            android:scaleType="fitXY" />
-
-        <ImageButton
-            android:id="@+id/card12"
             android:layout_width="65dp"
             android:layout_height="85dp"
             android:background="@drawable/card"
