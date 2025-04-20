@@ -27,7 +27,6 @@ public class leaderboard extends AppCompatActivity {
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Navigate to CardCatalogActivity
                 Intent intent = new Intent(leaderboard.this, MainActivity.class);
                 startActivity(intent);
             }
