@@ -7,6 +7,7 @@ import android.os.SystemClock;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.ImageButton;
+import android.content.SharedPreferences;
 
 import androidx.appcompat.app.AppCompatActivity;
 import java.util.Arrays;
@@ -265,6 +266,9 @@ public class hardnew extends AppCompatActivity {
             // Stop the timer when game is complete
             pauseTimer();
 
+            // Save the score when game is completed
+            saveScore(flipCount);
+
             // Disable further clicks while showing completion
             for (ImageButton card : cards) {
                 if (card != null) {
@@ -288,6 +292,36 @@ public class hardnew extends AppCompatActivity {
                     finish(); // End this activity to ensure a fresh start
                 }
             }, 500);
+        }
+    }
+
+    /**
+     * Saves the player's score to SharedPreferences
+     * Call this method when a game is completed
+     * @param flips The number of flips (or moves) taken to complete the game
+     */
+    private void saveScore(int flips) {
+        // Get username from intent
+        String username = getIntent().getStringExtra("username");
+        if (username == null || username.isEmpty()) {
+            username = "Player"; // Default name if none provided
+        }
+
+        // Set the difficulty based on current activity
+        String difficulty = "hard"; // Since this is the hardnew class
+
+        // Save the score
+        SharedPreferences scoresPrefs = getSharedPreferences("MonkeyMindMatchScores", MODE_PRIVATE);
+        SharedPreferences.Editor editor = scoresPrefs.edit();
+
+        // Create a unique key for this user and difficulty
+        String scoreKey = username + "_" + difficulty;
+
+        // Only save if it's a better score (lower flip count) or first time playing
+        int currentBestScore = scoresPrefs.getInt(scoreKey, Integer.MAX_VALUE);
+        if (flips < currentBestScore) {
+            editor.putInt(scoreKey, flips);
+            editor.apply();
         }
     }
 

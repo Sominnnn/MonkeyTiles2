@@ -7,6 +7,10 @@ import android.os.SystemClock;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.ImageButton;
+import android.content.SharedPreferences;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 import androidx.appcompat.app.AppCompatActivity;
 import java.util.Arrays;
@@ -249,6 +253,64 @@ public class easynew extends AppCompatActivity {
         isBusy = false;
     }
 
+    /**
+     * Saves the player's score to SharedPreferences
+     * Call this method when a game is completed
+     * @param flips The number of flips (or moves) taken to complete the game
+     * @param timeString The final time string in "MM:SS" format
+     */
+    private void saveScore(int flips, String timeString) {
+        // Get username from intent
+        String username = getIntent().getStringExtra("USERNAME");
+        if (username == null || username.isEmpty()) {
+            username = "Player"; // Default name if none provided
+        }
+
+        // Set the difficulty based on current activity
+        String difficulty = "easy";
+
+        // Parse time string to seconds for comparison
+        String[] timeParts = timeString.split(":");
+        int minutes = Integer.parseInt(timeParts[0]);
+        int seconds = Integer.parseInt(timeParts[1]);
+        int totalSeconds = (minutes * 60) + seconds;
+
+        // Save the score
+        SharedPreferences scoresPrefs = getSharedPreferences("MonkeyMindMatchScores", MODE_PRIVATE);
+        SharedPreferences.Editor editor = scoresPrefs.edit();
+
+        // Create unique keys for this user and difficulty
+        String flipsKey = username + "_" + difficulty + "_flips";
+        String timeKey = username + "_" + difficulty + "_time";
+
+        // Only save if it's a better score (lower flip count or faster time) or first time playing
+        int currentBestFlips = scoresPrefs.getInt(flipsKey, Integer.MAX_VALUE);
+        int currentBestTime = scoresPrefs.getInt(timeKey, Integer.MAX_VALUE);
+
+        boolean newRecord = false;
+
+        // Check if this is a better score
+        if (flips < currentBestFlips ||
+                (flips == currentBestFlips && totalSeconds < currentBestTime)) {
+            // Update both flips and time
+            editor.putInt(flipsKey, flips);
+            editor.putInt(timeKey, totalSeconds);
+            editor.putString(username + "_" + difficulty + "_timestring", timeString);
+
+            // Also store the date
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+            String currentDate = sdf.format(new Date());
+            editor.putString(username + "_" + difficulty + "_date", currentDate);
+
+            newRecord = true;
+        }
+
+        // Apply changes
+        if (newRecord) {
+            editor.apply();
+        }
+    }
+
     private void checkGameOver() {
         boolean allMatched = true;
         for (ImageButton card : cards) {
@@ -277,6 +339,9 @@ public class easynew extends AppCompatActivity {
                 if (!isFinishing() && !isDestroyed()) {
                     // Get the final time values
                     String finalTime = timerTextView.getText().toString();
+
+                    // Save score to SharedPreferences
+                    saveScore(flipCount, finalTime);
 
                     // You could create a GameCompleted activity or use a dialog
                     Intent intent = new Intent(easynew.this, win.class);
