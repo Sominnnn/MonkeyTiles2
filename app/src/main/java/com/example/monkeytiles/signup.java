@@ -63,10 +63,10 @@ public class signup extends AppCompatActivity {
                 // Save the username to SharedPreferences for later use in leaderboards
                 saveUsername(username);
 
-                // Navigate to the game activity or back to main menu
-                Intent intent = new Intent(signup.this, MainActivity.class);
+                // Navigate to the ChooseDifficulty activity
+                Intent intent = new Intent(signup.this, choosedifficulty.class);
+                intent.putExtra("username", username); // Pass the username to the next activity if needed
                 startActivity(intent);
-                Toast.makeText(signup.this, "Welcome, " + username + "!", Toast.LENGTH_SHORT).show();
                 finish();
             }
         });
