@@ -32,8 +32,10 @@ public class hardnew extends AppCompatActivity {
     // Timer variables
     private TextView timerTextView;
     private long startTimeMillis = 0;
+    private long pausedTimeMillis = 0;  // Store the elapsed time when paused
     private Handler timerHandler = new Handler();
     private boolean timerRunning = false;
+    private boolean gamePaused = false;  // Track if the game is paused
 
     // Runnable for updating the timer
     private final Runnable timerRunnable = new Runnable() {
@@ -71,7 +73,7 @@ public class hardnew extends AppCompatActivity {
         // Set up pause button
         Button pausebutton = findViewById(R.id.pausbtn_newhard);
         pausebutton.setOnClickListener(v -> {
-            pauseTimer(); // Pause the timer when game is paused
+            pauseGame(); // Pause the timer and set game state
             Intent intent = new Intent(hardnew.this, pause2.class);
             startActivity(intent);
             // Add a transition animation
@@ -86,27 +88,46 @@ public class hardnew extends AppCompatActivity {
             // Always do a full reset/shuffle when the activity is created normally
             resetGame();
         }
-
-        // Start the timer when the game starts
-        startTimer();
     }
 
     private void startTimer() {
         if (!timerRunning) {
-            startTimeMillis = SystemClock.elapsedRealtime();
+            if (pausedTimeMillis > 0) {
+                // Resume from where we left off
+                startTimeMillis = SystemClock.elapsedRealtime() - pausedTimeMillis;
+            } else {
+                // Start fresh
+                startTimeMillis = SystemClock.elapsedRealtime();
+            }
             timerHandler.postDelayed(timerRunnable, 0);
             timerRunning = true;
         }
     }
 
     private void pauseTimer() {
-        timerHandler.removeCallbacks(timerRunnable);
-        timerRunning = false;
+        if (timerRunning) {
+            timerHandler.removeCallbacks(timerRunnable);
+            pausedTimeMillis = SystemClock.elapsedRealtime() - startTimeMillis;
+            timerRunning = false;
+        }
     }
 
     private void resetTimer() {
         pauseTimer();
+        pausedTimeMillis = 0;
         updateTimerDisplay(0, 0);
+    }
+
+    private void pauseGame() {
+        gamePaused = true;
+        pauseTimer();
+    }
+
+    private void resumeGame() {
+        if (gamePaused) {
+            gamePaused = false;
+            startTimer();
+        }
     }
 
     private void updateTimerDisplay(int minutes, int seconds) {
@@ -149,6 +170,7 @@ public class hardnew extends AppCompatActivity {
 
         // Reset the timer
         resetTimer();
+        gamePaused = false;
         startTimer();
 
         // Reset all card images and tags
@@ -169,6 +191,9 @@ public class hardnew extends AppCompatActivity {
     }
 
     private void onCardClick(int index) {
+        // Don't process clicks if game is paused
+        if (gamePaused) return;
+
         // Validate index to prevent crashes
         if (index < 0 || index >= cards.length || cards[index] == null) {
             return;
@@ -272,7 +297,9 @@ public class hardnew extends AppCompatActivity {
         super.onNewIntent(intent);
         setIntent(intent);
         // If returning to this activity, ensure we reset the game if requested
-        if (intent.getBooleanExtra("RESTART_GAME", false) || needsReshuffling) {
+        if (intent.getBooleanExtra("RESTART_GAME", false)) {
+            resetGame();
+        } else if (needsReshuffling) {
             resetGame();
         }
     }
@@ -283,21 +310,19 @@ public class hardnew extends AppCompatActivity {
         // When restarting from background, make sure to reset if needed
         if (needsReshuffling) {
             resetGame();
-        } else {
-            // Resume timer
-            startTimer();
         }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        // You can check if a reset is needed here too
-        if (needsReshuffling) {
+        // Resume the game if we're coming back from pause screen
+        if (gamePaused) {
+            resumeGame();
+        }
+        // If we need reshuffling, do a full reset
+        else if (needsReshuffling) {
             resetGame();
-        } else {
-            // Resume timer
-            startTimer();
         }
     }
 
@@ -311,7 +336,7 @@ public class hardnew extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         // Override back button behavior to go to pause screen
-        pauseTimer(); // Pause the timer
+        pauseGame(); // Pause the timer and game state
         Intent intent = new Intent(hardnew.this, pause2.class);
         startActivity(intent);
         // Don't call super.onBackPressed() as it would finish this activity
