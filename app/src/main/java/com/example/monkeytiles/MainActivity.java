@@ -60,8 +60,10 @@ public class MainActivity extends AppCompatActivity {
         leaderboardButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Navigate to CardCatalogActivity
-                Intent intent = new Intent(MainActivity.this, leaderboard.class);
+                // Navigate to difficulty selection first instead of directly to leaderboard
+                Intent intent = new Intent(MainActivity.this, choosedifficulty.class);
+                // Add this extra to indicate we're going to show leaderboard after selection
+                intent.putExtra("destination", "leaderboard");
                 startActivity(intent);
             }
         });
