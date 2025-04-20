@@ -16,17 +16,17 @@ public class easynew extends AppCompatActivity {
     // Make sure this matches exactly with the number of image buttons in your layout
     private ImageButton[] cards = new ImageButton[8];
     private Integer[] cardImages = {
-            R.drawable.mandrill, R.drawable.proboscismonkey, R.drawable.spider,
-            R.drawable.squirellmonkey, R.drawable.mandrill, R.drawable.proboscismonkey, R.drawable.spider,
-            R.drawable.squirellmonkey
+            R.drawable.mandrill, R.drawable.proboscismonkey,
+            R.drawable.spider, R.drawable.squirellmonkey,
+            R.drawable.mandrill, R.drawable.proboscismonkey,
+            R.drawable.spider, R.drawable.squirellmonkey
     };
 
     private int firstCardIndex = -1;
     private boolean isBusy = false;
     private int flipCount = 0;
     private TextView flipCounter;
-    private int matchedPairs = 0;
-    private final int totalPairs = 4; // Total number of pairs in this game
+    private static boolean needsReshuffling = true; // Track if cards need reshuffling
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,18 +39,21 @@ public class easynew extends AppCompatActivity {
         // Initialize all cards first
         initializeCards();
 
-        // Shuffle images
-        Collections.shuffle(Arrays.asList(cardImages));
-
         // Set up pause button
         Button pausebutton = findViewById(R.id.pausebtn_easynew);
         pausebutton.setOnClickListener(v -> {
             Intent intent = new Intent(easynew.this, pause.class);
             startActivity(intent);
+            // Add a transition animation
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         });
 
-        // Handle restart if needed
+        // Check if we're coming from the restart button
         if (getIntent().getBooleanExtra("RESTART_GAME", false)) {
+            // Force a reset if we're coming from the restart button
+            resetGame();
+        } else {
+            // Always do a full reset/shuffle when the activity is created normally
             resetGame();
         }
     }
@@ -60,37 +63,43 @@ public class easynew extends AppCompatActivity {
             String cardID = "card" + i;
             int resID = getResources().getIdentifier(cardID, "id", getPackageName());
 
-            // Skip if card not found in layout
+            // Debug info to check if the cards are found
             if (resID == 0) {
+                // If card not found, log or handle appropriately
                 continue;
             }
 
             cards[i] = findViewById(resID);
             if (cards[i] != null) {
                 cards[i].setImageResource(R.drawable.card);
-                cards[i].setTag(null); // Ensure tag is null initially
                 final int index = i;
                 cards[i].setOnClickListener(v -> onCardClick(index));
             }
         }
     }
 
+    // Ensure shuffle happens every time
+    private void shuffleCards() {
+        Collections.shuffle(Arrays.asList(cardImages));
+        needsReshuffling = false; // Reset the flag after shuffling
+    }
+
     private void resetGame() {
-        // Reset the flip count and matched pairs
+        // Reset the flip count
         flipCount = 0;
-        matchedPairs = 0;
         updateFlipCounter();
 
-        // Reset all card images
+        // Reset all card images and tags
         for (ImageButton card : cards) {
             if (card != null) {
                 card.setImageResource(R.drawable.card);
                 card.setTag(null);
+                card.setClickable(true); // Ensure cards are clickable again
             }
         }
 
-        // Reshuffle the cards
-        Collections.shuffle(Arrays.asList(cardImages));
+        // Always reshuffle the cards on reset
+        shuffleCards();
 
         // Reset game state
         firstCardIndex = -1;
@@ -98,53 +107,46 @@ public class easynew extends AppCompatActivity {
     }
 
     private void onCardClick(int index) {
-        // Don't process clicks if:
-        // 1. The game is busy processing a previous click
-        // 2. The clicked card is already matched
-        // 3. The clicked card is already flipped (it's the first card of the current pair)
-        if (isBusy || index < 0 || index >= cards.length ||
-                cards[index] == null || "matched".equals(cards[index].getTag()) ||
-                index == firstCardIndex) {
+        // Validate index to prevent crashes
+        if (index < 0 || index >= cards.length || cards[index] == null) {
             return;
         }
 
-        // Flip the card and show its image
+        if (isBusy || cards[index].getTag() != null) return;
+
         cards[index].setImageResource(cardImages[index]);
         flipCount++;
         updateFlipCounter();
 
         if (firstCardIndex < 0) {
-            // This is the first card flipped
             firstCardIndex = index;
         } else {
-            // This is the second card - check for a match
             isBusy = true;
+            // Check if the indices are valid
+            if (firstCardIndex >= 0 && firstCardIndex < cardImages.length &&
+                    index >= 0 && index < cardImages.length) {
 
-            // Check if the images match (not the indices)
-            if (cardImages[firstCardIndex].equals(cardImages[index])) {
-                // Match found!
-                cards[firstCardIndex].setTag("matched");
-                cards[index].setTag("matched");
-                matchedPairs++;
-
-                // Reset for the next pair selection
-                resetTurn();
-
-                // Check if all pairs are matched
-                if (matchedPairs >= totalPairs) {
-                    handleGameComplete();
+                if (cardImages[firstCardIndex].equals(cardImages[index])) {
+                    // Match
+                    cards[firstCardIndex].setTag("matched");
+                    cards[index].setTag("matched");
+                    resetTurn();
+                    checkGameOver();
+                } else {
+                    // No match
+                    Handler handler = new Handler();
+                    handler.postDelayed(() -> {
+                        // Check if the activity is still active
+                        if (!isFinishing() && !isDestroyed()) {
+                            cards[firstCardIndex].setImageResource(R.drawable.card);
+                            cards[index].setImageResource(R.drawable.card);
+                            resetTurn();
+                        }
+                    }, 1000);
                 }
             } else {
-                // No match - flip the cards back after a delay
-                Handler handler = new Handler();
-                handler.postDelayed(() -> {
-                    // Check if the activity is still active
-                    if (!isFinishing() && !isDestroyed()) {
-                        cards[firstCardIndex].setImageResource(R.drawable.card);
-                        cards[index].setImageResource(R.drawable.card);
-                        resetTurn();
-                    }
-                }, 1000);
+                // Invalid indices, reset turn
+                resetTurn();
             }
         }
     }
@@ -160,21 +162,70 @@ public class easynew extends AppCompatActivity {
         isBusy = false;
     }
 
-    private void handleGameComplete() {
-        Handler handler = new Handler();
-        handler.postDelayed(() -> {
-            if (!isFinishing() && !isDestroyed()) {
-                Intent intent = new Intent(easynew.this, MainActivity.class);
-                intent.putExtra("GAME_COMPLETED", true);
-                intent.putExtra("FLIP_COUNT", flipCount);
-                intent.putExtra("DIFFICULTY", "Easy"); // Fixed to match the class name
-                startActivity(intent);
-                finish(); // End this activity when game is completed
+    private void checkGameOver() {
+        boolean allMatched = true;
+        for (ImageButton card : cards) {
+            if (card != null && card.getTag() == null) {
+                allMatched = false;
+                break;
             }
-        }, 500);
+        }
+
+        if (allMatched) {
+            // Set flag to indicate reshuffling is needed on next start
+            needsReshuffling = true;
+
+            // Disable further clicks while showing completion
+            for (ImageButton card : cards) {
+                if (card != null) {
+                    card.setClickable(false);
+                }
+            }
+
+            Handler handler = new Handler();
+            handler.postDelayed(() -> {
+                if (!isFinishing() && !isDestroyed()) {
+                    // You could create a GameCompleted activity or use a dialog
+                    Intent intent = new Intent(easynew.this, MainActivity.class);
+                    intent.putExtra("GAME_COMPLETED", true);
+                    intent.putExtra("FLIP_COUNT", flipCount);
+                    intent.putExtra("DIFFICULTY", "Hard");
+                    startActivity(intent);
+                    finish(); // End this activity to ensure a fresh start
+                }
+            }, 500);
+        }
     }
 
-    // Override the onPause and onResume methods to handle activity lifecycle
+    // Override the onNewIntent method to handle when the activity is reused
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        // If returning to this activity, ensure we reset the game if requested
+        if (intent.getBooleanExtra("RESTART_GAME", false) || needsReshuffling) {
+            resetGame();
+        }
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        // When restarting from background, make sure to reset if needed
+        if (needsReshuffling) {
+            resetGame();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // You can check if a reset is needed here too
+        if (needsReshuffling) {
+            resetGame();
+        }
+    }
+
     @Override
     protected void onPause() {
         super.onPause();
@@ -182,14 +233,8 @@ public class easynew extends AppCompatActivity {
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        // You can restore game state here if needed
-    }
-
-    @Override
     public void onBackPressed() {
-        // Override back button behavior to go to pause screen instead of MainActivity
+        // Override back button behavior to go to pause screen
         Intent intent = new Intent(easynew.this, pause.class);
         startActivity(intent);
         // Don't call super.onBackPressed() as it would finish this activity

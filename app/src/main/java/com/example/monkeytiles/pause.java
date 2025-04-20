@@ -2,13 +2,13 @@ package com.example.monkeytiles;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.Button;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import android.widget.Button;
 
 public class pause extends AppCompatActivity {
 
@@ -23,30 +23,46 @@ public class pause extends AppCompatActivity {
             return insets;
         });
 
-        Button returnbutton = findViewById(R.id.startbtn_pause);
-        returnbutton.setOnClickListener(v -> {
-            Intent intent = new Intent(pause.this, easynew.class);
-            startActivity(intent);
-        });
+        // Set up continue button
+        Button continueButton = findViewById(R.id.startbtn_pause);
+        if (continueButton != null) {
+            continueButton.setOnClickListener(v -> {
+                // Simply finish this activity to return to the game
+                // Add an animation to make the transition smoother
+                finish();
+                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+            });
+        }
 
-        // In your pause activity (pause.java)
+        // Set up restart button
         Button restartButton = findViewById(R.id.restartbtn_pause);
-        restartButton.setOnClickListener(v -> {
-            // Create an intent to return to the game activity
-            Intent intent = new Intent(pause.this, easynew.class);
+        if (restartButton != null) {
+            restartButton.setOnClickListener(v -> {
+                // Create a new intent for hardnew activity with a restart flag
+                Intent intent = new Intent(pause.this, hardnew.class);
+                intent.putExtra("RESTART_GAME", true);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); // Clear the activity stack
+                startActivity(intent);
+                finish(); // Close the pause activity
+            });
+        }
 
-            // Add extra data to signal that this is a restart
-            intent.putExtra("RESTART_GAME", true);
+        // Set up home button (optional)
+        Button homeButton = findViewById(R.id.homebtn_pause);
+        if (homeButton != null) {
+            homeButton.setOnClickListener(v -> {
+                Intent intent = new Intent(pause.this, MainActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); // Clear the activity stack
+                startActivity(intent);
+                finish(); // Close the pause activity
+            });
+        }
+    }
 
-            startActivity(intent);
-            finish(); // Close the pause activity
-        });
-
-        Button homebutton = findViewById(R.id.homebtn_pause);
-        homebutton.setOnClickListener(v -> {
-            Intent intent = new Intent(pause.this, MainActivity.class);
-            startActivity(intent);
-        });
-
+    @Override
+    public void onBackPressed() {
+        // Override back button to continue the game
+        finish();
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
     }
 }
