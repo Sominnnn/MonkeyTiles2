@@ -13,7 +13,7 @@ import java.util.Collections;
 
 public class mediumeasy extends AppCompatActivity {
 
-    // Modified to have 12 cards to match the 12 cardImages
+    // Make sure this matches exactly with the number of image buttons in your layout
     private ImageButton[] cards = new ImageButton[12];
     private Integer[] cardImages = {
             R.drawable.mandrill, R.drawable.proboscismonkey, R.drawable.spider,
@@ -33,73 +33,117 @@ public class mediumeasy extends AppCompatActivity {
         setContentView(R.layout.activity_mediumeasy);
 
         flipCounter = findViewById(R.id.flipCounterMedium);
+        updateFlipCounter();
+
+        // Initialize all cards first
+        initializeCards();
 
         // Shuffle images
         Collections.shuffle(Arrays.asList(cardImages));
 
-        // Initialize cards
-        for (int i = 0; i < cards.length; i++) {
-            int resID = getResources().getIdentifier("card" + i, "id", getPackageName());
-            cards[i] = findViewById(resID);
-            final int index = i;
-            cards[i].setImageResource(R.drawable.card);
-            cards[i].setOnClickListener(v -> onCardClick(index));
-        }
-
-        // Handle game restart
-        if (getIntent().getBooleanExtra("RESTART_GAME", false)) {
-            // Reset the flip count
-            flipCount = 0;
-            flipCounter.setText("0");
-
-            // Reset all card images to card_back
-            for (int i = 0; i < cards.length; i++) {
-                cards[i].setImageResource(R.drawable.card);
-                cards[i].setTag(null);  // Clear any tag associated with the cards
-            }
-
-            // Shuffle the cards again
-            Collections.shuffle(Arrays.asList(cardImages));
-        }
-
-        // pause button
+        // Set up pause button
         Button pausebutton = findViewById(R.id.pausebtn_mediumeasy);
         pausebutton.setOnClickListener(v -> {
             Intent intent = new Intent(mediumeasy.this, pause.class);
-            // Add flag to prevent return to MainActivity
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            // Don't use finish() here as it might be causing the problem
             startActivity(intent);
         });
+
+        // Handle restart if needed
+        if (getIntent().getBooleanExtra("RESTART_GAME", false)) {
+            resetGame();
+        }
+    }
+
+    private void initializeCards() {
+        for (int i = 0; i < cards.length; i++) {
+            String cardID = "card" + i;
+            int resID = getResources().getIdentifier(cardID, "id", getPackageName());
+
+            // Debug info to check if the cards are found
+            if (resID == 0) {
+                // If card not found, log or handle appropriately
+                continue;
+            }
+
+            cards[i] = findViewById(resID);
+            if (cards[i] != null) {
+                cards[i].setImageResource(R.drawable.card);
+                final int index = i;
+                cards[i].setOnClickListener(v -> onCardClick(index));
+            }
+        }
+    }
+
+    private void resetGame() {
+        // Reset the flip count
+        flipCount = 0;
+        updateFlipCounter();
+
+        // Reset all card images
+        for (ImageButton card : cards) {
+            if (card != null) {
+                card.setImageResource(R.drawable.card);
+                card.setTag(null);
+            }
+        }
+
+        // Reshuffle the cards
+        Collections.shuffle(Arrays.asList(cardImages));
+
+        // Reset game state
+        firstCardIndex = -1;
+        isBusy = false;
     }
 
     private void onCardClick(int index) {
+        // Validate index to prevent crashes
+        if (index < 0 || index >= cards.length || cards[index] == null) {
+            return;
+        }
+
         if (isBusy || cards[index].getTag() != null) return;
 
         cards[index].setImageResource(cardImages[index]);
         flipCount++;
-        flipCounter.setText("" + flipCount);
+        updateFlipCounter();
 
         if (firstCardIndex < 0) {
             firstCardIndex = index;
         } else {
             isBusy = true;
-            if (cardImages[firstCardIndex].equals(cardImages[index])) {
-                // Match
-                cards[firstCardIndex].setTag("matched");
-                cards[index].setTag("matched");
-                resetTurn();
+            // Check if the indices are valid
+            if (firstCardIndex >= 0 && firstCardIndex < cardImages.length &&
+                    index >= 0 && index < cardImages.length) {
 
-                // Check if game is over
-                checkGameOver();
-            } else {
-                // No match
-                Handler handler = new Handler();
-                handler.postDelayed(() -> {
-                    cards[firstCardIndex].setImageResource(R.drawable.card);
-                    cards[index].setImageResource(R.drawable.card);
+                if (cardImages[firstCardIndex].equals(cardImages[index])) {
+                    // Match
+                    cards[firstCardIndex].setTag("matched");
+                    cards[index].setTag("matched");
                     resetTurn();
-                }, 1000);
+                    checkGameOver();
+                } else {
+                    // No match
+                    Handler handler = new Handler();
+                    handler.postDelayed(() -> {
+                        // Check if the activity is still active
+                        if (!isFinishing() && !isDestroyed()) {
+                            cards[firstCardIndex].setImageResource(R.drawable.card);
+                            cards[index].setImageResource(R.drawable.card);
+                            resetTurn();
+                        }
+                    }, 1000);
+                }
+            } else {
+                // Invalid indices, reset turn
+                resetTurn();
             }
+        }
+    }
+
+    private void updateFlipCounter() {
+        if (flipCounter != null) {
+            flipCounter.setText(String.valueOf(flipCount));
         }
     }
 
@@ -108,34 +152,48 @@ public class mediumeasy extends AppCompatActivity {
         isBusy = false;
     }
 
-    // Add method to check if all cards are matched
     private void checkGameOver() {
         boolean allMatched = true;
         for (ImageButton card : cards) {
-            if (card.getTag() == null) {
+            if (card != null && card.getTag() == null) {
                 allMatched = false;
                 break;
             }
         }
 
         if (allMatched) {
-            // Game over, show success or navigate to another screen
             Handler handler = new Handler();
             handler.postDelayed(() -> {
-                Intent intent = new Intent(mediumeasy.this, youwin2.class);
-                intent.putExtra("FLIP_COUNT", flipCount);
-                intent.putExtra("DIFFICULTY", "Medium-Easy");
-                startActivity(intent);
-                finish();
+                if (!isFinishing() && !isDestroyed()) {
+                    // You could create a GameCompleted activity or use a dialog
+                    Intent intent = new Intent(mediumeasy.this, MainActivity.class);
+                    intent.putExtra("GAME_COMPLETED", true);
+                    intent.putExtra("FLIP_COUNT", flipCount);
+                    intent.putExtra("DIFFICULTY", "Medium-Easy");
+                    startActivity(intent);
+                }
             }, 500);
         }
     }
 
-    // Override back button to prevent returning to MainActivity
+    // Override the onPause and onResume methods to handle activity lifecycle
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // You can save game state here if needed
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // You can restore game state here if needed
+    }
+
     @Override
     public void onBackPressed() {
+        // Override back button behavior to go to pause screen instead of MainActivity
         Intent intent = new Intent(mediumeasy.this, pause.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
+        // Don't call super.onBackPressed() as it would finish this activity
     }
 }
