@@ -49,21 +49,8 @@ public class leaderboard extends AppCompatActivity {
         String currentUsername = userPrefs.getString("username", "");
         Log.d(TAG, "Current user is: " + currentUsername);
 
-        // Create a test score if the leaderboard is empty (for development/testing)
-        SharedPreferences scorePrefs = getSharedPreferences("MonkeyMindMatchScores", MODE_PRIVATE);
-        if (scorePrefs.getAll().isEmpty() && !currentUsername.isEmpty()) {
-            Log.d(TAG, "No scores found, creating test score for current user");
-
-            // Create test scores for the current user in all difficulties
-            SharedPreferences.Editor editor = scorePrefs.edit();
-            // Make sure to use the exact same username key format
-            editor.putInt(currentUsername + "_easy", 20);
-            editor.putInt(currentUsername + "_normal", 35);
-            editor.putInt(currentUsername + "_hard", 50);
-            editor.apply();
-
-            Toast.makeText(this, "Created test scores for demonstration", Toast.LENGTH_SHORT).show();
-        }
+        // FOR TESTING ONLY: Create test scores if no scores exist
+        addTestScoresIfNeeded(currentUsername);
 
         // Check if a specific difficulty was passed
         if (getIntent().hasExtra("difficulty")) {
@@ -87,6 +74,7 @@ public class leaderboard extends AppCompatActivity {
 
         leaderboardContainer.addView(filterInfo);
 
+        // Set up pause button
         pauseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -96,6 +84,48 @@ public class leaderboard extends AppCompatActivity {
         });
 
         // Add filter buttons
+        setupFilterButtons();
+
+        // Create table header
+        createTableHeader();
+
+        // Load and display leaderboard data
+        loadLeaderboard(currentUsername);
+    }
+
+    /**
+     * FOR TESTING ONLY: This method adds test scores for the current user if no scores exist
+     * In a real app, you would remove this and rely on scores from actual gameplay
+     */
+    private void addTestScoresIfNeeded(String currentUsername) {
+        if (currentUsername.isEmpty()) {
+            Log.d(TAG, "No current username, skipping test score creation");
+            return;
+        }
+
+        SharedPreferences scorePrefs = getSharedPreferences("MonkeyMindMatchScores", MODE_PRIVATE);
+        Map<String, ?> allScores = scorePrefs.getAll();
+
+        // Only add test scores if none exist at all
+        if (allScores.isEmpty()) {
+            Log.d(TAG, "No scores found, creating test scores for current user");
+
+            // Create test scores with the exact username format
+            SharedPreferences.Editor editor = scorePrefs.edit();
+            editor.putInt(currentUsername + "_easy", 20);
+            editor.putInt(currentUsername + "_normal", 35);
+            editor.putInt(currentUsername + "_hard", 50);
+            editor.apply();
+
+            // Verify scores were added
+            Map<String, ?> updatedScores = scorePrefs.getAll();
+            Log.d(TAG, "Added test scores, now have " + updatedScores.size() + " scores");
+
+            Toast.makeText(this, "Created test scores for demonstration", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void setupFilterButtons() {
         LinearLayout filterButtons = new LinearLayout(this);
         filterButtons.setLayoutParams(new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
@@ -157,7 +187,9 @@ public class leaderboard extends AppCompatActivity {
         filterButtons.addView(hardBtn);
 
         leaderboardContainer.addView(filterButtons);
+    }
 
+    private void createTableHeader() {
         // Header row
         LinearLayout headerRow = new LinearLayout(this);
         headerRow.setLayoutParams(new LinearLayout.LayoutParams(
@@ -220,9 +252,6 @@ public class leaderboard extends AppCompatActivity {
                 LinearLayout.LayoutParams.MATCH_PARENT, 2));
         headerDivider.setBackgroundColor(getResources().getColor(android.R.color.black));
         leaderboardContainer.addView(headerDivider);
-
-        // Load and display leaderboard data
-        loadLeaderboard(currentUsername);
     }
 
     private void loadLeaderboard(String currentUsername) {
@@ -233,7 +262,7 @@ public class leaderboard extends AppCompatActivity {
         Map<String, ?> allScores = scoresPrefs.getAll();
         Log.d(TAG, "Found " + allScores.size() + " entries in SharedPreferences");
         for (Map.Entry<String, ?> entry : allScores.entrySet()) {
-            Log.d(TAG, "Key=" + entry.getKey() + ", Value=" + entry.getValue());
+            Log.d(TAG, "Key=" + entry.getKey() + ", Value=" + entry.getValue().toString());
         }
 
         // Debug: Print out the current username for verification
@@ -241,61 +270,75 @@ public class leaderboard extends AppCompatActivity {
 
         List<LeaderboardEntry> entries = new ArrayList<>();
 
-        // Add a special entry for the current user if they don't have any scores yet
+        // Track if current user has any scores
         boolean currentUserHasScore = false;
 
         for (Map.Entry<String, ?> entry : allScores.entrySet()) {
             String key = entry.getKey();
-            // Format expected: username_difficulty
-            String[] parts = key.split("_");
 
-            if (parts.length >= 2) {
-                String username = parts[0];
-                String difficulty = parts[1];
+            // Check if the key has the correct format (username_difficulty)
+            if (!key.contains("_")) {
+                Log.d(TAG, "Skipping invalid key format: " + key);
+                continue;
+            }
 
-                Log.d(TAG, "Processing entry: " + username + " with difficulty " + difficulty);
+            // Split the key on the first underscore only
+            int underscoreIndex = key.indexOf("_");
+            if (underscoreIndex <= 0 || underscoreIndex >= key.length() - 1) {
+                Log.d(TAG, "Skipping key with invalid underscore position: " + key);
+                continue;
+            }
 
-                // Check if this is the current user's score
-                if (username.equals(currentUsername)) {
-                    currentUserHasScore = true;
-                    Log.d(TAG, "Found a score for current user: " + currentUsername);
-                }
+            String username = key.substring(0, underscoreIndex);
+            String difficulty = key.substring(underscoreIndex + 1);
 
-                // Filter by difficulty if needed
-                if (!currentDifficulty.equals("all") && !difficulty.equals(currentDifficulty)) {
-                    Log.d(TAG, "Skipping entry because difficulty doesn't match filter");
+            Log.d(TAG, "Processing entry: " + username + " with difficulty " + difficulty);
+
+            // Check if this is the current user's score
+            if (username.equalsIgnoreCase(currentUsername)) {
+                currentUserHasScore = true;
+                Log.d(TAG, "Found a score for current user: " + currentUsername);
+            }
+
+            // Filter by difficulty if needed
+            if (!currentDifficulty.equals("all") && !difficulty.equals(currentDifficulty)) {
+                Log.d(TAG, "Skipping entry because difficulty doesn't match filter");
+                continue;
+            }
+
+            int flips = 0;
+            try {
+                Object value = entry.getValue();
+                if (value instanceof Integer) {
+                    flips = (Integer) value;
+                } else if (value instanceof String) {
+                    flips = Integer.parseInt((String) value);
+                } else if (value instanceof Long) {
+                    flips = ((Long) value).intValue();
+                } else {
+                    Log.e(TAG, "Unexpected value type: " + value.getClass().getName());
                     continue;
                 }
+            } catch (Exception e) {
+                Log.e(TAG, "Error parsing score value: " + e.getMessage());
+                continue;
+            }
 
-                int flips = 0;
-                try {
-                    Object value = entry.getValue();
-                    if (value instanceof Integer) {
-                        flips = (Integer) value;
-                    } else if (value instanceof String) {
-                        flips = Integer.parseInt((String) value);
-                    } else {
-                        Log.e(TAG, "Unexpected value type: " + value.getClass().getName());
-                        continue;
-                    }
-                } catch (Exception e) {
-                    Log.e(TAG, "Error parsing score value", e);
-                    continue;
-                }
-
-                if (flips > 0) { // Only add valid scores
-                    entries.add(new LeaderboardEntry(username, difficulty, flips));
-                    Log.d(TAG, "Added entry to list: " + username + ", " + difficulty + ", " + flips);
-                }
-            } else {
-                Log.d(TAG, "Skipping entry with invalid format: " + key);
+            if (flips > 0) { // Only add valid scores
+                entries.add(new LeaderboardEntry(username, difficulty, flips));
+                Log.d(TAG, "Added entry to list: " + username + ", " + difficulty + ", " + flips);
             }
         }
 
-        // If the current user has no scores yet but we have a valid username, display a placeholder
-        if (!currentUserHasScore && !currentUsername.isEmpty() && currentDifficulty.equals("all")) {
-            Log.d(TAG, "Adding placeholder entry for current user with no scores");
-            entries.add(new LeaderboardEntry(currentUsername, "N/A", 0));
+        // Add a placeholder entry for the current user if they have no scores yet
+        if (!currentUserHasScore && !currentUsername.isEmpty()) {
+            if (currentDifficulty.equals("all")) {
+                Log.d(TAG, "Adding placeholder entry for current user with no scores");
+                entries.add(new LeaderboardEntry(currentUsername, "N/A", 0));
+            } else {
+                Log.d(TAG, "Adding difficulty-specific placeholder for current user");
+                entries.add(new LeaderboardEntry(currentUsername, currentDifficulty, 0));
+            }
         }
 
         // Sort entries by flips (ascending - fewer flips is better)
@@ -314,11 +357,12 @@ public class leaderboard extends AppCompatActivity {
         // Display entries in the layout
         int count = 0;
         for (LeaderboardEntry entry : entries) {
-            if (count >= 10 && !entry.username.equals(currentUsername)) {
-                continue; // Skip non-current user entries if we already have 10, but always show current user
+            // Always include the current user even if we have 10+ entries
+            if (count >= 10 && !entry.username.equalsIgnoreCase(currentUsername)) {
+                continue;
             }
 
-            // For simplicity, creating text views directly
+            // Create a row layout for this entry
             LinearLayout rowLayout = new LinearLayout(this);
             rowLayout.setLayoutParams(new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT,
@@ -334,17 +378,15 @@ public class leaderboard extends AppCompatActivity {
 
             // Rank column
             TextView rankView = new TextView(this);
-            LinearLayout.LayoutParams rankParams = new LinearLayout.LayoutParams(
-                    0, LinearLayout.LayoutParams.WRAP_CONTENT, 0.2f);
-            rankView.setLayoutParams(rankParams);
+            rankView.setLayoutParams(new LinearLayout.LayoutParams(
+                    0, LinearLayout.LayoutParams.WRAP_CONTENT, 0.2f));
             rankView.setText(entry.flips == 0 ? "-" : "#" + (count + 1));
             rankView.setTextSize(16);
 
             // Name column
             TextView nameView = new TextView(this);
-            LinearLayout.LayoutParams nameParams = new LinearLayout.LayoutParams(
-                    0, LinearLayout.LayoutParams.WRAP_CONTENT, 0.8f);
-            nameView.setLayoutParams(nameParams);
+            nameView.setLayoutParams(new LinearLayout.LayoutParams(
+                    0, LinearLayout.LayoutParams.WRAP_CONTENT, 0.8f));
             nameView.setText(entry.username);
             nameView.setTextSize(16);
 
@@ -352,18 +394,16 @@ public class leaderboard extends AppCompatActivity {
             TextView difficultyView = null;
             if (currentDifficulty.equals("all")) {
                 difficultyView = new TextView(this);
-                LinearLayout.LayoutParams diffParams = new LinearLayout.LayoutParams(
-                        0, LinearLayout.LayoutParams.WRAP_CONTENT, 0.5f);
-                difficultyView.setLayoutParams(diffParams);
+                difficultyView.setLayoutParams(new LinearLayout.LayoutParams(
+                        0, LinearLayout.LayoutParams.WRAP_CONTENT, 0.5f));
                 difficultyView.setText(entry.difficulty);
                 difficultyView.setTextSize(16);
             }
 
-            // Flips/Time column
+            // Flips/Score column
             TextView scoreView = new TextView(this);
-            LinearLayout.LayoutParams scoreParams = new LinearLayout.LayoutParams(
-                    0, LinearLayout.LayoutParams.WRAP_CONTENT, 0.5f);
-            scoreView.setLayoutParams(scoreParams);
+            scoreView.setLayoutParams(new LinearLayout.LayoutParams(
+                    0, LinearLayout.LayoutParams.WRAP_CONTENT, 0.5f));
             scoreView.setText(entry.flips == 0 ? "No score yet" : String.valueOf(entry.flips) + " flips");
             scoreView.setTextSize(16);
             scoreView.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_END);
@@ -379,12 +419,12 @@ public class leaderboard extends AppCompatActivity {
 
             // Add a divider
             View divider = new View(this);
-            LinearLayout.LayoutParams dividerParams = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT, 1);
-            dividerParams.setMargins(0, 4, 0, 4);
-            divider.setLayoutParams(dividerParams);
+            divider.setLayoutParams(new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, 1));
             divider.setBackgroundColor(getResources().getColor(android.R.color.darker_gray));
-
+            divider.setLayoutParams(new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, 1));
+            divider.setBackgroundColor(getResources().getColor(android.R.color.darker_gray));
             leaderboardContainer.addView(divider);
 
             if (entry.flips > 0) { // Only count valid scores toward the limit
