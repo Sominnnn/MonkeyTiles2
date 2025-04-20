@@ -1,6 +1,9 @@
 package com.example.monkeytiles;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -20,5 +23,25 @@ public class category7 extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        Button categoryButton = findViewById(R.id.nextbtn_category7);
+        categoryButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Navigate to CardCatalogActivity
+                Intent intent = new Intent(category7.this, choosedifficulty.class);
+                startActivity(intent);
+            }
+        });
+
+        Button homeButton = findViewById(R.id.prevbtn_category);
+        homeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Navigate to CardCatalogActivity
+                Intent intent = new Intent(category7.this, category6.class);
+                startActivity(intent);
+            }
+        });
+
     }
 }
