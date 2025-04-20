@@ -42,11 +42,11 @@ public class pause extends AppCompatActivity {
             finish(); // Close the pause activity
         });
 
-
         Button homebutton = findViewById(R.id.homebtn_pause);
         homebutton.setOnClickListener(v -> {
             Intent intent = new Intent(pause.this, MainActivity.class);
             startActivity(intent);
         });
+
     }
 }

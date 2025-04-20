@@ -23,6 +23,7 @@ public class choosedifficulty extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
         Button pauseButton = findViewById(R.id.pausebtn_choosediff);
         pauseButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -43,7 +44,7 @@ public class choosedifficulty extends AppCompatActivity {
             }
         });
 
-        Button easyButton = findViewById(R.id.easybtn_choosediff2);
+        Button easyButton = findViewById(R.id.easybtn_choosediff);
         easyButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
