@@ -32,7 +32,7 @@ public class win extends AppCompatActivity {
 
         // Set the text to display the flip count
         if (flipsTextView != null) {
-            flipsTextView.setText("FLIPS: " + flipCount);
+            flipsTextView.setText("" + flipCount);
         }
 
         // Optional: Set up the Play Again button
