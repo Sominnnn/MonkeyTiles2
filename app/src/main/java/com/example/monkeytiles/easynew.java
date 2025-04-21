@@ -11,14 +11,12 @@ import android.content.SharedPreferences;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
-
 import androidx.appcompat.app.AppCompatActivity;
 import java.util.Arrays;
 import java.util.Collections;
 
 public class easynew extends AppCompatActivity {
 
-    // Make sure this matches exactly with the number of image buttons in your layout
     private ImageButton[] cards = new ImageButton[8];
     private Integer[] cardImages = {
             R.drawable.mandrill, R.drawable.proboscismonkey,
@@ -31,33 +29,25 @@ public class easynew extends AppCompatActivity {
     private boolean isBusy = false;
     private int flipCount = 0;
     private TextView flipCounter;
-    private static boolean needsReshuffling = true; // Track if cards need reshuffling
+    private static boolean needsReshuffling = true;
 
-    // Timer variables
     private TextView timerTextView;
     private long startTimeMillis = 0;
-    private long pausedTimeMillis = 0;  // Store the elapsed time when paused
+    private long pausedTimeMillis = 0;
     private Handler timerHandler = new Handler();
     private boolean timerRunning = false;
-    private boolean gamePaused = false;  // Track if the game is paused
+    private boolean gamePaused = false;
 
-    // Runnable for updating the timer
     private final Runnable timerRunnable = new Runnable() {
         @Override
         public void run() {
             long currentTimeMillis = SystemClock.elapsedRealtime();
             long elapsedMillis = currentTimeMillis - startTimeMillis;
-
-            // Convert to seconds
             int seconds = (int) (elapsedMillis / 1000);
             int minutes = seconds / 60;
             seconds = seconds % 60;
-
-            // Update the timer TextView
             updateTimerDisplay(minutes, seconds);
-
-            // Post again to keep the timer running
-            timerHandler.postDelayed(this, 1000); // Update every second
+            timerHandler.postDelayed(this, 1000);
         }
     };
 
@@ -67,29 +57,22 @@ public class easynew extends AppCompatActivity {
         setContentView(R.layout.activity_easynew);
 
         flipCounter = findViewById(R.id.flipCounter);
-        // Initialize timer TextView - make sure to add this to your layout!
         timerTextView = findViewById(R.id.timerEasy);
         updateFlipCounter();
 
-        // Initialize all cards first
         initializeCards();
 
-        // Set up pause button
         Button pausebutton = findViewById(R.id.pausebtn_easynew);
         pausebutton.setOnClickListener(v -> {
-            pauseGame(); // Pause the timer and set game state
+            pauseGame();
             Intent intent = new Intent(easynew.this, pause.class);
             startActivity(intent);
-            // Add a transition animation
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         });
 
-        // Check if we're coming from the restart button
         if (getIntent().getBooleanExtra("RESTART_GAME", false)) {
-            // Force a reset if we're coming from the restart button
             resetGame();
         } else {
-            // Always do a full reset/shuffle when the activity is created normally
             resetGame();
         }
     }
@@ -97,10 +80,8 @@ public class easynew extends AppCompatActivity {
     private void startTimer() {
         if (!timerRunning) {
             if (pausedTimeMillis > 0) {
-                // Resume from where we left off
                 startTimeMillis = SystemClock.elapsedRealtime() - pausedTimeMillis;
             } else {
-                // Start fresh
                 startTimeMillis = SystemClock.elapsedRealtime();
             }
             timerHandler.postDelayed(timerRunnable, 0);
@@ -145,13 +126,7 @@ public class easynew extends AppCompatActivity {
         for (int i = 0; i < cards.length; i++) {
             String cardID = "card" + i;
             int resID = getResources().getIdentifier(cardID, "id", getPackageName());
-
-            // Debug info to check if the cards are found
-            if (resID == 0) {
-                // If card not found, log or handle appropriately
-                continue;
-            }
-
+            if (resID == 0) continue;
             cards[i] = findViewById(resID);
             if (cards[i] != null) {
                 cards[i].setImageResource(R.drawable.card);
@@ -161,48 +136,32 @@ public class easynew extends AppCompatActivity {
         }
     }
 
-    // Ensure shuffle happens every time
     private void shuffleCards() {
         Collections.shuffle(Arrays.asList(cardImages));
-        needsReshuffling = false; // Reset the flag after shuffling
+        needsReshuffling = false;
     }
 
     private void resetGame() {
-        // Reset the flip count
         flipCount = 0;
         updateFlipCounter();
-
-        // Reset the timer
         resetTimer();
         gamePaused = false;
         startTimer();
-
-        // Reset all card images and tags
         for (ImageButton card : cards) {
             if (card != null) {
                 card.setImageResource(R.drawable.card);
                 card.setTag(null);
-                card.setClickable(true); // Ensure cards are clickable again
+                card.setClickable(true);
             }
         }
-
-        // Always reshuffle the cards on reset
         shuffleCards();
-
-        // Reset game state
         firstCardIndex = -1;
         isBusy = false;
     }
 
     private void onCardClick(int index) {
-        // Don't process clicks if game is paused
         if (gamePaused) return;
-
-        // Validate index to prevent crashes
-        if (index < 0 || index >= cards.length || cards[index] == null) {
-            return;
-        }
-
+        if (index < 0 || index >= cards.length || cards[index] == null) return;
         if (isBusy || cards[index].getTag() != null) return;
 
         cards[index].setImageResource(cardImages[index]);
@@ -213,21 +172,16 @@ public class easynew extends AppCompatActivity {
             firstCardIndex = index;
         } else {
             isBusy = true;
-            // Check if the indices are valid
             if (firstCardIndex >= 0 && firstCardIndex < cardImages.length &&
                     index >= 0 && index < cardImages.length) {
-
                 if (cardImages[firstCardIndex].equals(cardImages[index])) {
-                    // Match
                     cards[firstCardIndex].setTag("matched");
                     cards[index].setTag("matched");
                     resetTurn();
                     checkGameOver();
                 } else {
-                    // No match
                     Handler handler = new Handler();
                     handler.postDelayed(() -> {
-                        // Check if the activity is still active
                         if (!isFinishing() && !isDestroyed()) {
                             cards[firstCardIndex].setImageResource(R.drawable.card);
                             cards[index].setImageResource(R.drawable.card);
@@ -236,7 +190,6 @@ public class easynew extends AppCompatActivity {
                     }, 1000);
                 }
             } else {
-                // Invalid indices, reset turn
                 resetTurn();
             }
         }
@@ -253,59 +206,41 @@ public class easynew extends AppCompatActivity {
         isBusy = false;
     }
 
-    /**
-     * Saves the player's score to SharedPreferences
-     * Call this method when a game is completed
-     * @param flips The number of flips (or moves) taken to complete the game
-     * @param timeString The final time string in "MM:SS" format
-     */
     private void saveScore(int flips, String timeString) {
-        // Get username from intent
         String username = getIntent().getStringExtra("USERNAME");
         if (username == null || username.isEmpty()) {
-            username = "Player"; // Default name if none provided
+            username = "Player";
         }
 
-        // Set the difficulty based on current activity
         String difficulty = "easy";
-
-        // Parse time string to seconds for comparison
         String[] timeParts = timeString.split(":");
         int minutes = Integer.parseInt(timeParts[0]);
         int seconds = Integer.parseInt(timeParts[1]);
         int totalSeconds = (minutes * 60) + seconds;
 
-        // Save the score
         SharedPreferences scoresPrefs = getSharedPreferences("MonkeyMindMatchScores", MODE_PRIVATE);
         SharedPreferences.Editor editor = scoresPrefs.edit();
 
-        // Create unique keys for this user and difficulty
         String flipsKey = username + "_" + difficulty + "_flips";
         String timeKey = username + "_" + difficulty + "_time";
 
-        // Only save if it's a better score (lower flip count or faster time) or first time playing
         int currentBestFlips = scoresPrefs.getInt(flipsKey, Integer.MAX_VALUE);
         int currentBestTime = scoresPrefs.getInt(timeKey, Integer.MAX_VALUE);
 
         boolean newRecord = false;
 
-        // Check if this is a better score
-        if (flips < currentBestFlips ||
-                (flips == currentBestFlips && totalSeconds < currentBestTime)) {
-            // Update both flips and time
+        if (flips < currentBestFlips || (flips == currentBestFlips && totalSeconds < currentBestTime)) {
             editor.putInt(flipsKey, flips);
             editor.putInt(timeKey, totalSeconds);
             editor.putString(username + "_" + difficulty + "_timestring", timeString);
-
-            // Also store the date
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
             String currentDate = sdf.format(new Date());
             editor.putString(username + "_" + difficulty + "_date", currentDate);
-
             newRecord = true;
         }
 
-        // Apply changes
+        editor.putBoolean(username + "_played", true);
+
         if (newRecord) {
             editor.apply();
         }
@@ -321,13 +256,9 @@ public class easynew extends AppCompatActivity {
         }
 
         if (allMatched) {
-            // Set flag to indicate reshuffling is needed on next start
             needsReshuffling = true;
-
-            // Stop the timer when game is complete
             pauseTimer();
 
-            // Disable further clicks while showing completion
             for (ImageButton card : cards) {
                 if (card != null) {
                     card.setClickable(false);
@@ -337,31 +268,24 @@ public class easynew extends AppCompatActivity {
             Handler handler = new Handler();
             handler.postDelayed(() -> {
                 if (!isFinishing() && !isDestroyed()) {
-                    // Get the final time values
                     String finalTime = timerTextView.getText().toString();
-
-                    // Save score to SharedPreferences
                     saveScore(flipCount, finalTime);
-
-                    // You could create a GameCompleted activity or use a dialog
                     Intent intent = new Intent(easynew.this, win.class);
                     intent.putExtra("GAME_COMPLETED", true);
                     intent.putExtra("FLIP_COUNT", flipCount);
                     intent.putExtra("FINAL_TIME", finalTime);
                     intent.putExtra("DIFFICULTY", "Easy");
                     startActivity(intent);
-                    finish(); // End this activity to ensure a fresh start
+                    finish();
                 }
             }, 500);
         }
     }
 
-    // Override the onNewIntent method to handle when the activity is reused
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
-        // If returning to this activity, ensure we reset the game if requested
         if (intent.getBooleanExtra("RESTART_GAME", false)) {
             resetGame();
         } else if (needsReshuffling) {
@@ -372,7 +296,6 @@ public class easynew extends AppCompatActivity {
     @Override
     protected void onRestart() {
         super.onRestart();
-        // When restarting from background, make sure to reset if needed
         if (needsReshuffling) {
             resetGame();
         }
@@ -381,12 +304,9 @@ public class easynew extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Resume the game if we're coming back from pause screen
         if (gamePaused) {
             resumeGame();
-        }
-        // If we need reshuffling, do a full reset
-        else if (needsReshuffling) {
+        } else if (needsReshuffling) {
             resetGame();
         }
     }
@@ -394,16 +314,13 @@ public class easynew extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        // Pause the timer when the activity is paused
         pauseTimer();
     }
 
     @Override
     public void onBackPressed() {
-        // Override back button behavior to go to pause screen
-        pauseGame(); // Pause the timer and game state
+        pauseGame();
         Intent intent = new Intent(easynew.this, pause.class);
         startActivity(intent);
-        // Don't call super.onBackPressed() as it would finish this activity
     }
 }
