@@ -8,6 +8,8 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.ImageButton;
 import android.content.SharedPreferences;
+import android.widget.Toast;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -206,26 +208,17 @@ public class easynew extends AppCompatActivity {
         isBusy = false;
     }
 
-    private void saveScore(int flips, String timeString) {
-        String username = getIntent().getStringExtra("USERNAME");
-        if (username == null || username.isEmpty()) {
-            username = "Player";
-        }
-
-        String difficulty = "easy";
-        String[] timeParts = timeString.split(":");
-        int minutes = Integer.parseInt(timeParts[0]);
-        int seconds = Integer.parseInt(timeParts[1]);
-        int totalSeconds = (minutes * 60) + seconds;
-
-        SharedPreferences scoresPrefs = getSharedPreferences("MonkeyMindMatchScores", MODE_PRIVATE);
-        SharedPreferences.Editor editor = scoresPrefs.edit();
+    public void saveScore(String username, int flips, int totalSeconds, String timeString, String difficulty) {
+        SharedPreferences preferences = getSharedPreferences("FlipCounts", MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
 
         String flipsKey = username + "_" + difficulty + "_flips";
         String timeKey = username + "_" + difficulty + "_time";
 
-        int currentBestFlips = scoresPrefs.getInt(flipsKey, Integer.MAX_VALUE);
-        int currentBestTime = scoresPrefs.getInt(timeKey, Integer.MAX_VALUE);
+        int currentBestFlips = preferences.getInt(flipsKey, Integer.MAX_VALUE);
+        int currentBestTime = preferences.getInt(timeKey, Integer.MAX_VALUE);
+
+        String leaderboardKey = username + "_" + difficulty;
 
         boolean newRecord = false;
 
@@ -233,18 +226,26 @@ public class easynew extends AppCompatActivity {
             editor.putInt(flipsKey, flips);
             editor.putInt(timeKey, totalSeconds);
             editor.putString(username + "_" + difficulty + "_timestring", timeString);
+
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
             String currentDate = sdf.format(new Date());
             editor.putString(username + "_" + difficulty + "_date", currentDate);
+
+            // Save using leaderboard-compatible key
+            editor.putInt(leaderboardKey, flips);
+
             newRecord = true;
         }
 
-        editor.putBoolean(username + "_played", true);
+        editor.apply();
 
         if (newRecord) {
-            editor.apply();
+            Toast.makeText(this, "New high score saved!", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "Score not high enough to be saved.", Toast.LENGTH_SHORT).show();
         }
     }
+
 
     private void checkGameOver() {
         boolean allMatched = true;
