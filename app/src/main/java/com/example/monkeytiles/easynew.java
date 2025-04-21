@@ -270,7 +270,13 @@ public class easynew extends AppCompatActivity {
             handler.postDelayed(() -> {
                 if (!isFinishing() && !isDestroyed()) {
                     String finalTime = timerTextView.getText().toString();
-                    saveScore(flipCount, finalTime);
+                    String[] parts = finalTime.split(":");
+                    int totalSeconds = Integer.parseInt(parts[0]) * 60 + Integer.parseInt(parts[1]);
+
+                    // Replace with real username fetching logic if needed
+                    String username = "Player";
+                    saveScore(username, flipCount, totalSeconds, finalTime, "Easy");
+
                     Intent intent = new Intent(easynew.this, win.class);
                     intent.putExtra("GAME_COMPLETED", true);
                     intent.putExtra("FLIP_COUNT", flipCount);
@@ -282,6 +288,7 @@ public class easynew extends AppCompatActivity {
             }, 500);
         }
     }
+
 
     @Override
     protected void onNewIntent(Intent intent) {
