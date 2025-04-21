@@ -39,7 +39,7 @@ public class pause extends AppCompatActivity {
         if (restartButton != null) {
             restartButton.setOnClickListener(v -> {
                 // Create a new intent for hardnew activity with a restart flag
-                Intent intent = new Intent(pause.this, hardnew.class);
+                Intent intent = new Intent(pause.this, easynew.class);
                 intent.putExtra("RESTART_GAME", true);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); // Clear the activity stack
                 startActivity(intent);
